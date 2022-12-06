@@ -1,5 +1,4 @@
 name: "infra preview & deploy"
-
 on:
   push:
     branches:
@@ -8,22 +7,18 @@ on:
       - 10_infra/**
       - .github/workflows/**
   workflow_dispatch:
-
 permissions:
   id-token: write
   contents: read
-
 env:
   TF_VERSION: 1.2.8
   AWS_REGION: ap-northeast-1
   TF_PROJECT: tastylog
   TF_ENVIRONMENT: dev
-
 defaults:
   run: 
     shell: bash
     working-directory: "10_infra/"
-
 jobs:
   preview:
     name: Preview
@@ -53,7 +48,7 @@ jobs:
           terraform validate -no-color
       - name: Terraform plan
         id: plan
-        continue-on-error: true
+        #continue-on-error: true
         run: |
           terraform plan \
             -var 'project=${{ env.TF_PROJECT }}' \
