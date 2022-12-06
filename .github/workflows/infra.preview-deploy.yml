@@ -1,4 +1,5 @@
 name: "infra preview & deploy"
+
 on:
   push:
     branches:
@@ -7,18 +8,22 @@ on:
       - 10_infra/**
       - .github/workflows/**
   workflow_dispatch:
+
 permissions:
   id-token: write
   contents: read
+
 env:
-  TF_VERSION: 1.2.8
   AWS_REGION: ap-northeast-1
+  TF_VERSION: 1.2.8
   TF_PROJECT: tastylog
   TF_ENVIRONMENT: dev
+
 defaults:
   run: 
     shell: bash
     working-directory: "10_infra/"
+
 jobs:
   preview:
     name: Preview
@@ -36,7 +41,7 @@ jobs:
         run: |
           terraform fmt -check
       - name: Configure AWS credential
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-Credentials@v1
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
@@ -47,8 +52,8 @@ jobs:
         run: |
           terraform validate -no-color
       - name: Terraform plan
-        id: plan
         #continue-on-error: true
+        id: plan
         run: |
           terraform plan \
             -var 'project=${{ env.TF_PROJECT }}' \
@@ -61,7 +66,7 @@ jobs:
       - name: Slack Notify
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          channel-id: "C04DVG5A9EW"
+          channel-id: "${{ secrets.SLACK_CHANNEL_ID }}"
           payload: |
             {
               "attachments": [
@@ -89,7 +94,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   deploy:
-    name: "Deploy"
+    name: Deploy
     needs: preview
     if: needs.preview.outputs.TF_PLAN_EXITCODE == 2
     environment: production
@@ -104,7 +109,7 @@ jobs:
       - name: Terraform format
         run: |
           terraform fmt -check
-      - name: Configure AWS credential
+      - name: Configure AWS Credential
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -114,7 +119,7 @@ jobs:
           terraform init -no-color
       - name: Terraform apply
         run: |
-          terraform plan \
+          terraform apply \
             -var 'project=${{ env.TF_PROJECT }}' \
             -var 'environment=${{ env.TF_ENVIRONMENT }}' \
             -var 'username=${{ secrets.MYSQL_USERNAME }}' \
